@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Posting Dashboard | hrFlo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a0f2e 50%, #0d0d0d 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #111111 0%, #1a1a2e 50%, #16213e 100%);
+            border-right: 1px solid rgba(99, 102, 241, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.1);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        .sidebar.collapsed { width: 80px; }
+        .sidebar-header {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .toggle-btn:hover { background: rgba(255, 255, 255, 0.1); transform: scale(1.05); }
+        .brand-logo {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s ease;
+        }
+        .brand-logo::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #6366f1;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+        .sidebar.collapsed .brand-logo { opacity: 0; width: 0; overflow: hidden; }
+        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
+            padding: 16px 16px 8px;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar.collapsed .nav-section-title { opacity: 0; height: 0; padding: 0; overflow: hidden; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+        .nav-item i { font-size: 18px; width: 20px; text-align: center; }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: #6366f1;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        .nav-item:hover { background: rgba(99, 102, 241, 0.1); color: #fff; }
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        .nav-item.active::before { transform: scaleY(1); }
+        .sidebar.collapsed .nav-item .label { opacity: 0; width: 0; overflow: hidden; }
+        .sidebar-footer { padding: 12px; border-top: 1px solid rgba(99, 102, 241, 0.1); }
+        .main { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; min-height: 100vh; }
+        .sidebar.collapsed ~ .main { margin-left: 80px; }
+        .topbar {
+            background: rgba(17, 17, 17, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .search-container { flex: 1; max-width: 500px; position: relative; }
+        .search-container i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .search-container input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .search-container input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        .search-container input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+        .top-actions { display: flex; align-items: center; gap: 16px; }
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .icon-btn .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+        }
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px 8px 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .profile:hover { background: rgba(255, 255, 255, 0.1); }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .profile-text { text-align: right; }
+        .name { font-size: 14px; font-weight: 600; }
+        .role { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+        .page-header {
+            padding: 32px 32px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .page-title h1 { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+        .page-subtitle { font-size: 14px; color: rgba(255, 255, 255, 0.6); }
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+        .kpi-grid {
+            padding: 0 32px 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        .kpi-label { font-size: 13px; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px; font-weight: 500; }
+        .kpi-value { font-size: 36px; font-weight: 700; position: relative; z-index: 1; }
+        .kpi-subtext { font-size: 12px; color: rgba(99, 102, 241, 0.8); margin-top: 8px; }
+        .chart-container {
+            position: relative;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .chart-container canvas { max-width: 100%; }
+        .controls-section {
+            padding: 0 32px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .filter-dropdown {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .filter-dropdown:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+        .filter-btn {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: #fff;
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+        .controls-spacer { flex: 1; }
+        .table-container {
+            padding: 0 32px 32px;
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            cursor: pointer;
+            user-select: none;
+        }
+        thead th:hover { color: rgba(255, 255, 255, 0.8); }
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        tbody td {
+            padding: 16px 12px;
+            font-size: 14px;
+        }
+        .job-title-cell {
+            color: #6366f1;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .job-title-cell:hover { text-decoration: underline; }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-open { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-draft { background: rgba(107, 114, 128, 0.2); color: #d1d5db; }
+        .status-closed { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .qualified-count {
+            color: #6366f1;
+            font-weight: 700;
+        }
+        .time-posted {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .action-menu {
+            position: relative;
+            display: inline-block;
+        }
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .menu-btn:hover { background: rgba(99, 102, 241, 0.1); color: #fff; }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(26, 26, 46, 0.9) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 10px;
+            min-width: 180px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover {
+            background: rgba(99, 102, 241, 0.15);
+            color: #fff;
+            padding-left: 20px;
+        }
+        .channel-icons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .channel-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366f1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        .channel-icon:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        .modal-title { font-size: 24px; font-weight: 700; }
+        .close-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .close-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .channel-option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .channel-option:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        .channel-option input { cursor: pointer; }
+        .channel-option-text { flex: 1; }
+        .channel-option-title { font-weight: 600; font-size: 14px; }
+        .channel-option-desc { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .btn-sm {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-sm:hover { background: rgba(255, 255, 255, 0.1); }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .topbar { padding: 16px 20px; }
+            .profile-text { display: none; }
+            .page-header { padding: 24px 20px 16px; flex-direction: column; align-items: flex-start; gap: 16px; }
+            .kpi-grid, .controls-section, .table-container { padding: 0 20px 20px; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .controls-section { flex-direction: column; }
+            .controls-spacer { flex: none; }
+            .filter-dropdown, .filter-btn, .btn-primary { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <header class="sidebar-header">
+        <button id="sidebarToggle" class="toggle-btn"><i class="fas fa-bars"></i></button>
+        <div class="brand-logo">hrFlo</div>
+      </header>
+      <nav class="nav">
+        <div class="nav-section-title">Overview</div>
+        <a class="nav-item" href="/frontend/HrManager/Final-files/hrmgr-dashboard.html"><i class="fas fa-chart-line"></i><span class="label">Dashboard</span></a>
+        <div class="nav-section-title">Recruitment</div>
+        <a class="nav-item active" href="#"><i class="fas fa-briefcase"></i><span class="label">Job Postings</span></a>
+        <a class="nav-item" href="#"><i class="fas fa-users"></i><span class="label">Candidate Sourcing</span></a>
+        <a class="nav-item" href="#"><i class="fas fa-envelope-open-text"></i><span class="label">Offer Letters</span></a>
+        <div class="nav-section-title">Employee Management</div>
+        <a class="nav-item" href="/frontend/HrManager/Pages_for_dashboard/Onboarding_allpages/Onboarding_home.html"><i class="fas fa-user-check"></i><span class="label">Onboarding</span></a>
+        <a class="nav-item" href="#"><i class="fas fa-medal"></i><span class="label">Performance</span></a>
+        <a class="nav-item" href="#"><i class="fas fa-sitemap"></i><span class="label">Succession Planning</span></a>
+        <div class="nav-section-title">Analytics</div>
+        <a class="nav-item" href="#"><i class="fas fa-file-chart-line"></i><span class="label">Reports & Analytics</span></a>
+        <a class="nav-item" href="#"><i class="fas fa-user-cog"></i><span class="label">User Management</span></a>
+      </nav>
+      <footer class="sidebar-footer">
+        <a class="nav-item" href="#"><i class="fas fa-cog"></i><span class="label">Settings</span></a>
+        <a class="nav-item" href="#"><i class="fas fa-sign-out-alt"></i><span class="label">Logout</span></a>
+      </footer>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <header class="topbar">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="search" placeholder="Search job postings...">
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn"><i class="far fa-bell"></i><span class="badge">5</span></button>
+          <div class="profile">
+            <div class="profile-text">
+              <div class="name">Rakshit.P</div>
+              <div class="role">HR Manager</div>
+            </div>
+            <div class="avatar">RP</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Job Postings</h1>
+          <p class="page-subtitle">Manage and track all active job postings and applications</p>
+        </div>
+        <!-- Redirect button -->
+        
+         
+
+          <a href="/frontend/HrManager/Pages_for_dashboard/Job Posting/add-jobposting.html"><button class="btn-primary"><i class="fas fa-plus"></i>Create New Job Posting</button></a>
+        
+      </div>
+
+      <!-- KPI Section -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Active Open Roles</div>
+          <div class="kpi-value">28</div>
+          <div class="kpi-subtext">↑ 3 from last month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg. Time to Fill</div>
+          <div class="kpi-value">18</div>
+          <div class="kpi-subtext">days (Target: 21)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg. Applications per Job</div>
+          <div class="kpi-value">42</div>
+          <div class="kpi-subtext">↓ 5 from last month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Offer Acceptance Rate</div>
+          <div class="kpi-value">89%</div>
+          <div class="kpi-subtext">↑ 4% this quarter</div>
+        </div>
+      </section>
+
+      <!-- Controls Section -->
+      <section class="controls-section">
+        <select class="filter-dropdown">
+          <option>All Statuses</option>
+          <option>Open</option>
+          <option>Draft</option>
+          <option>Closed</option>
+        </select>
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Engineering</button>
+        <button class="filter-btn">Design</button>
+        <button class="filter-btn">HR</button>
+        <div class="controls-spacer"></div>
+      </section>
+
+      <!-- Table -->
+      <section class="table-container">
+        <div class="card">
+          <h2>Active Job Listings</h2>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Department</th>
+                  <th>Status</th>
+                  <th>Applicants</th>
+                  <th>Posted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="job-title-cell">Frontend Developer</td>
+                  <td>Engineering</td>
+                  <td><span class="status-badge status-open">Open</span></td>
+                  <td class="qualified-count">68</td>
+                  <td class="time-posted">3 days ago</td>
+                  <td>
+                    <div class="action-menu">
+                      <button class="menu-btn"><i class="fas fa-ellipsis-h"></i></button>
+                      <div class="dropdown-menu">
+                        <div class="dropdown-item"><i class="fas fa-eye"></i> View Details</div>
+                        <div class="dropdown-item"><i class="fas fa-edit"></i> Edit</div>
+                        <div class="dropdown-item"><i class="fas fa-trash"></i> Delete</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="job-title-cell">UI/UX Designer</td>
+                  <td>Design</td>
+                  <td><span class="status-badge status-draft">Draft</span></td>
+                  <td class="qualified-count">25</td>
+                  <td class="time-posted">1 week ago</td>
+                  <td>
+                    <div class="action-menu">
+                      <button class="menu-btn"><i class="fas fa-ellipsis-h"></i></button>
+                      <div class="dropdown-menu">
+                        <div class="dropdown-item"><i class="fas fa-eye"></i> View Details</div>
+                        <div class="dropdown-item"><i class="fas fa-edit"></i> Edit</div>
+                        <div class="dropdown-item"><i class="fas fa-trash"></i> Delete</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="job-title-cell">HR Executive</td>
+                  <td>Human Resources</td>
+                  <td><span class="status-badge status-closed">Closed</span></td>
+                  <td class="qualified-count">14</td>
+                  <td class="time-posted">2 months ago</td>
+                  <td>
+                    <div class="action-menu">
+                      <button class="menu-btn"><i class="fas fa-ellipsis-h"></i></button>
+                      <div class="dropdown-menu">
+                        <div class="dropdown-item"><i class="fas fa-eye"></i> View Details</div>
+                        <div class="dropdown-item"><i class="fas fa-edit"></i> Edit</div>
+                        <div class="dropdown-item"><i class="fas fa-trash"></i> Delete</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Sidebar toggle
+    const sidebar = document.getElementById("sidebar");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    sidebarToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+    });
+
+    // Dropdown menus
+    document.querySelectorAll(".menu-btn").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const menu = btn.nextElementSibling;
+        document.querySelectorAll(".dropdown-menu").forEach(m => m !== menu && m.classList.remove("show"));
+        menu.classList.toggle("show");
+      });
+    });
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".dropdown-menu").forEach(m => m.classList.remove("show"));
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+...
+<body>
+  <div class="app-layout">
+    <div class="sidebar">... (Navigation links with .active on Succession Planning) ...</div>
+    <div class="main-content">
+        <header class="main-header">
+            <h1>Succession Planning Module</h1>
+            <button class="logout-btn btn" onclick="logoutUser()">Logout</button>
+        </header>
+        <div class="module-container">
+            <h2>Plan Successor for a Role</h2>
+            <input type="text" id="position" placeholder="Position / Role to be filled (e.g., VP of Operations)" />
+            <input type="text" id="successor" placeholder="Successor Name (Internal Employee)" />
+            <button id="addSuccessorBtn" class="btn">Add Successor Plan</button>
+
+            <h2 style="margin-top: 40px;">Succession Plans</h2>
+            <ul id="plans" class="data-list"></ul>
+            <button class="back-btn btn" onclick="backToDashboard()">Back to Dashboard</button>
+        </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
