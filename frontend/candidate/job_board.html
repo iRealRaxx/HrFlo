@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Board | hrFlo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a0f2e 50%, #0d0d0d 100%); color: #fff; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 36px; text-align: center; margin-bottom: 40px; }
+        .job-card {
+            background: #1a1a2e;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .job-card:hover { transform: translateY(-5px); border-color: #6366f1; }
+        .job-title { font-size: 22px; font-weight: 600; color: #6366f1; }
+        .job-meta { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+        .apply-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #6366f1;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Open Positions</h1>
+        <div id="job-listings"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const jobListings = document.getElementById('job-listings');
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/jobs');
+                const jobs = await response.json();
+
+                if (jobs.length === 0) {
+                    jobListings.innerHTML = '<p style="text-align:center;">No open positions at this time.</p>';
+                    return;
+                }
+
+                jobs.forEach(job => {
+                    const card = document.createElement('div');
+                    card.className = 'job-card';
+                    card.innerHTML = `
+                        <div>
+                            <div class="job-title">${job.title}</div>
+                            <div class="job-meta">Department: ${job.department} | Closes: ${new Date(job.closingDate).toLocaleDateString()}</div>
+                        </div>
+                        <a href="apply.html?jobId=${job.jobID}&title=${encodeURIComponent(job.title)}" class="apply-btn">Apply Now</a>
+                    `;
+                    jobListings.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Failed to fetch jobs:', error);
+                jobListings.innerHTML = '<p style="text-align:center;">Could not load job listings. Please try again later.</p>';
+            }
+            
+        });
+    </script>
+</body>
+</html>

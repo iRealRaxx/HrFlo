@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Postings | hrFlo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a0f2e 50%, #0d0d0d 100%); color: #fff; min-height: 100vh; }
+        .app { display: flex; }
+        .sidebar { width: 280px; background: linear-gradient(135deg, #111111 0%, #1a1a2e 50%, #16213e 100%); border-right: 1px solid rgba(99, 102, 241, 0.1); position: fixed; height: 100vh; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.1); }
+        .brand-logo { font-size: 24px; font-weight: 700; }
+        .nav { padding: 20px 12px; }
+        .nav-section-title { font-size: 11px; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); padding: 16px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px; }
+        .nav-item i { font-size: 18px; width: 20px; text-align: center; }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.15); color: #fff; }
+        .sidebar-footer { padding: 12px; border-top: 1px solid rgba(99, 102, 241, 0.1); position: absolute; bottom: 0; width: 100%; }
+        .main { flex: 1; margin-left: 280px; padding: 20px 32px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h1 { font-size: 32px; font-weight: 700; }
+        .btn-primary { padding: 12px 24px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; border: none; border-radius: 10px; cursor: pointer; text-decoration: none; }
+        .card { background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 32px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        th { font-size: 12px; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+        .status-badge { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; }
+        .status-open { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <header class="sidebar-header"><div class="brand-logo">hrFlo</div></header>
+            <nav class="nav">
+                <div class="nav-section-title">Overview</div>
+                <a class="nav-item" href="dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <div class="nav-section-title">Recruitment</div>
+                <a class="nav-item active" href="job_posting.html"><i class="fas fa-briefcase"></i><span>Job Postings</span></a>
+                <a class="nav-item" href="applicants.html"><i class="fas fa-users"></i><span>Applicants</span></a>
+                <div class="nav-section-title">Employee Management</div>
+                <a class="nav-item" href="onboarding.html"><i class="fas fa-user-check"></i><span>Onboarding</span></a>
+                <a class="nav-item" href="promotions.html"><i class="fas fa-arrow-up"></i><span>Promotions</span></a>
+                <a class="nav-item" href="succession_planning.html"><i class="fas fa-sitemap"></i><span>Succession Planning</span></a>
+            </nav>
+            <footer class="sidebar-footer"><a class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></footer>
+        </aside>
+        <main class="main">
+            <div class="page-header">
+                <h1>Job Postings</h1>
+                <a href="add_job.html" class="btn-primary"><i class="fas fa-plus"></i> Add New</a>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Closing Date</th>
+                            <th>Applicants</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobsTableBody">
+                        <!-- Job rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tableBody = document.getElementById('jobsTableBody');
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/jobs');
+                const jobs = await response.json();
+                
+                if (jobs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No job postings found.</td></tr>';
+                    return;
+                }
+
+                jobs.forEach(job => {
+                    const row = `
+                        <tr>
+                            <td>${job.title}</td>
+                            <td>${job.department}</td>
+                            <td><span class="status-badge status-open">${job.status}</span></td>
+                            <td>${new Date(job.closingDate).toLocaleDateString()}</td>
+                            <td>0</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Error loading data.</td></tr>';
+            }
+        });
+    </script>
+</body>
+</html>

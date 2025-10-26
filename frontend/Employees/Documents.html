@@ -3,835 +3,133 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Documents | hrFlo</title>
+    <title>My Documents | hrFlo</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-        /* === Base Styling === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a0f2e 50%, #0d0d0d 100%);
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* === Layout === */
-        .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
-
-        /* === Sidebar === */
-        .sidebar {
-            width: 280px;
-            background: linear-gradient(135deg, #111111 0%, #1a1a2e 50%, #16213e 100%);
-            border-right: 1px solid rgba(99, 102, 241, 0.1);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 60px rgba(99, 102, 241, 0.1);
-            z-index: 100;
-            overflow-y: auto;
-        }
-        .sidebar.collapsed { width: 80px; }
-        .sidebar-header {
-            padding: 24px 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-        }
-        .toggle-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .toggle-btn:hover { background: rgba(255, 255, 255, 0.1); transform: scale(1.05); }
-        .brand-logo {
-            font-size: 24px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.3s ease;
-        }
-        .brand-logo::before {
-            content: '';
-            width: 12px;
-            height: 12px;
-            background: #6366f1;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
-        }
-        .sidebar.collapsed .brand-logo { opacity: 0; width: 0; overflow: hidden; }
-        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
-        .nav-section-title {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.4);
-            padding: 16px 16px 8px;
-            transition: opacity 0.3s ease;
-        }
-        .sidebar.collapsed .nav-section-title { opacity: 0; height: 0; padding: 0; overflow: hidden; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 500;
-            position: relative;
-        }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a0f2e 50%, #0d0d0d 100%); color: #fff; min-height: 100vh; }
+        .app { display: flex; }
+        .sidebar { width: 280px; background: linear-gradient(135deg, #111111 0%, #1a1a2e 50%, #16213e 100%); border-right: 1px solid rgba(99, 102, 241, 0.1); position: fixed; height: 100vh; display: flex; flex-direction: column; z-index: 100;}
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.1); }
+        .brand-logo { font-size: 24px; font-weight: 700; }
+        .nav { padding: 20px 12px; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px; }
         .nav-item i { font-size: 18px; width: 20px; text-align: center; }
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: #6366f1;
-            transform: scaleY(0);
-            transition: transform 0.3s ease;
-        }
-        .nav-item:hover { background: rgba(99, 102, 241, 0.1); color: #fff; }
-        .nav-item.active {
-            background: rgba(99, 102, 241, 0.15);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-        .nav-item.active::before { transform: scaleY(1); }
-        .sidebar.collapsed .nav-item .label { opacity: 0; width: 0; overflow: hidden; }
-        .sidebar-footer { padding: 12px; border-top: 1px solid rgba(99, 102, 241, 0.1); }
-
-        /* === Topbar === */
-        .main { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; min-height: 100vh; }
-        .sidebar.collapsed ~ .main { margin-left: 80px; }
-        .topbar {
-            background: rgba(17, 17, 17, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-            padding: 20px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-        .search-container { flex: 1; max-width: 500px; position: relative; }
-        .search-container i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.4);
-        }
-        .search-container input {
-            width: 100%;
-            padding: 12px 16px 12px 44px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        .search-container input::placeholder { color: rgba(255, 255, 255, 0.4); }
-        .search-container input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
-        }
-        .top-actions { display: flex; align-items: center; gap: 16px; }
-        .icon-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        .icon-btn .badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 10px;
-            min-width: 18px;
-        }
-        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px 8px 8px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .profile:hover { background: rgba(255, 255, 255, 0.1); }
-        .avatar { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; }
-        .profile-text { text-align: right; }
-        .name { font-size: 14px; font-weight: 600; }
-        .role { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
-
-        /* === Content Cards === */
-        .page-header { padding: 32px 32px 24px; }
-        .welcome-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        .page-subtitle { font-size: 14px; color: rgba(255, 255, 255, 0.6); }
-        .content { padding: 0 32px 32px; }
-        .card {
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.1);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        .card:hover { box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15); }
-        .card-title { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
-
-        /* === Tabs === */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-        }
-        .tab {
-            padding: 12px 20px;
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .tab.active {
-            color: #6366f1;
-            border-bottom-color: #6366f1;
-        }
-        .tab:hover { color: rgba(255, 255, 255, 0.8); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* === Upload Section === */
-        .upload-section {
-            border: 2px dashed rgba(99, 102, 241, 0.3);
-            border-radius: 12px;
-            padding: 50px 40px;
-            text-align: center;
-            background: rgba(99, 102, 241, 0.05);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .upload-section:hover {
-            border-color: rgba(99, 102, 241, 0.5);
-            background: rgba(99, 102, 241, 0.1);
-        }
-        .upload-section.drag-over {
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.15);
-        }
-        .upload-icon {
-            font-size: 48px;
-            color: #6366f1;
-            margin-bottom: 16px;
-        }
-        .upload-text {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .upload-subtext {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        .upload-input { display: none; }
-
-        /* === Filter Bar === */
-        .filter-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-        .filter-select {
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .filter-select:focus {
-            outline: none;
-            border-color: rgba(99, 102, 241, 0.5);
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .filter-select option { background: #1a1a2e; color: #fff; }
-
-        /* === Documents Grid === */
-        .documents-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .document-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 24px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        .document-card:hover {
-            border-color: rgba(99, 102, 241, 0.3);
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
-        }
-        .document-icon {
-            font-size: 40px;
-            margin-bottom: 16px;
-            color: #6366f1;
-        }
-        .document-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .document-meta {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 12px;
-        }
-        .document-details {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* === Status Badges === */
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-bottom: 16px;
-        }
-        .status-verified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .status-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
-        .status-expired { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-        /* === Document Actions === */
-        .document-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .doc-btn {
-            flex: 1;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .doc-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-        .doc-btn.delete:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.4);
-            color: #ef4444;
-        }
-
-        /* === Empty State === */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        .empty-state-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* === Modal === */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-        }
-        .modal-close {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .form-input, .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(99, 102, 241, 0.5);
-        }
-        .form-select option { background: #1a1a2e; }
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
-        }
-
-        /* === Toast Notification === */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 12px;
-            padding: 16px 24px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 300;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-        .toast.show { transform: translateX(0); }
-        .toast i { font-size: 18px; }
-
-        /* === Responsive === */
-        @media (max-width: 1200px) {
-            .documents-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            }
-        }
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
-            .main { margin-left: 0; }
-            .topbar { padding: 16px 20px; }
-            .profile-text { display: none; }
-            .content { padding: 0 20px 20px; }
-            .page-header { padding: 24px 20px 16px; }
-            .documents-grid { grid-template-columns: 1fr; }
-        }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.15); color: #fff; }
+        .main { flex: 1; margin-left: 280px; padding: 20px 32px; }
+        .page-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 24px;}
+        .card { background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+        .card-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .upload-section { border: 2px dashed rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 40px; text-align: center; background: rgba(99, 102, 241, 0.05); cursor: pointer; transition: all 0.3s ease; }
+        .upload-section:hover { border-color: rgba(99, 102, 241, 0.5); background: rgba(99, 102, 241, 0.1); }
+        .upload-icon { font-size: 40px; color: #6366f1; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px;}
+        th, td { text-align: left; padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        th { font-size: 12px; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+        .btn-download { color: #6366f1; text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <header class="sidebar-header">
-                <button id="sidebarToggle" class="toggle-btn"><i class="fas fa-bars"></i></button>
-                <div class="brand-logo">hrFlo</div>
-            </header>
+        <aside class="sidebar">
+            <header class="sidebar-header"><div class="brand-logo">hrFlo</div></header>
             <nav class="nav">
-                <div class="nav-section-title">Overview</div>
-                <a class="nav-item" href="/frontend/Employees/Dashboard.html"><i class="fas fa-chart-line"></i><span class="label">Dashboard</span></a>
-                <div class="nav-section-title">My Profile</div>
-                <a class="nav-item" href="/frontend/Employees/Personal-Info.html"><i class="fas fa-user"></i><span class="label">Personal Information</span></a>
-                <a class="nav-item active" href="#"><i class="fas fa-file"></i><span class="label">Documents</span></a>
-                <div class="nav-section-title">Work & Attendance</div>
-                <a class="nav-item" href="#"><i class="fas fa-calendar-check"></i><span class="label">Attendance Overview</span></a>
-                <a class="nav-item" href="#"><i class="fas fa-plane"></i><span class="label">Leave Requests</span></a>
+                <a class="nav-item" href="dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a class="nav-item" href="personal_info.html"><i class="fas fa-user"></i><span>Personal Info</span></a>
+                <a class="nav-item active" href="documents.html"><i class="fas fa-file"></i><span>Documents</span></a>
             </nav>
-            <footer class="sidebar-footer">
-                <a class="nav-item" href="#"><i class="fas fa-cog"></i><span class="label">Account Settings</span></a>
-                <a class="nav-item" href="#"><i class="fas fa-sign-out-alt"></i><span class="label">Logout</span></a>
-            </footer>
         </aside>
-
-        <!-- Main -->
         <main class="main">
-            <header class="topbar">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="search" id="searchInput" placeholder="Search documents…">
+            <div class="page-header"><h1>My Documents</h1></div>
+            <div class="card">
+                <h2 class="card-title">Upload New Document</h2>
+                <div class="upload-section" id="uploadArea">
+                    <input type="file" id="fileInput" multiple hidden>
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <p>Drag & drop files here, or click to browse</p>
                 </div>
-                <div class="top-actions">
-                    <button class="icon-btn"><i class="far fa-question-circle"></i></button>
-                    <button class="icon-btn"><i class="far fa-bell"></i><span class="badge">3</span></button>
-                    <div class="profile">
-                        <div class="profile-text">
-                            <div class="name">Sarah Johnson</div>
-                            <div class="role">Employee</div>
-                        </div>
-                        <div class="avatar"><i class="fas fa-user"></i></div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="page-header">
-                <div class="welcome-title">Documents</div>
-                <p class="page-subtitle">Manage your employment documents, certifications, and records</p>
             </div>
-
-            <div class="content">
-                <!-- Upload Card -->
-                <div class="card">
-                    <div class="card-title">Upload New Document</div>
-                    <div class="upload-section" id="uploadArea">
-                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                        <div class="upload-text">Drag and drop your documents here</div>
-                        <div class="upload-subtext">or click to browse (PDF, DOC, JPG, PNG - Max 10MB)</div>
-                        <input type="file" id="fileInput" class="upload-input" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
-                    </div>
-                </div>
-
-                <!-- Documents List Card -->
-                <div class="card">
-                    <div class="card-title">Your Documents</div>
-                    
-                    <!-- Tabs -->
-                    <div class="tabs">
-                        <button class="tab active" data-tab="all">All Documents</button>
-                        <button class="tab" data-tab="employment">Employment</button>
-                        <button class="tab" data-tab="certifications">Certifications</button>
-                        <button class="tab" data-tab="personal">Personal</button>
-                    </div>
-
-                    <!-- Filter Bar -->
-                    <div class="filter-bar">
-                        <select class="filter-select" id="statusFilter">
-                            <option value="all">All Status</option>
-                            <option value="verified">Verified</option>
-                            <option value="pending">Pending</option>
-                            <option value="expired">Expired</option>
-                        </select>
-                        <select class="filter-select" id="sortFilter">
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="name">Name A-Z</option>
-                        </select>
-                    </div>
-
-                    <!-- Tab Contents -->
-                    <div class="tab-content active" id="tab-all">
-                        <div class="documents-grid" id="documentsGrid"></div>
-                    </div>
-                    <div class="tab-content" id="tab-employment">
-                        <div class="documents-grid" id="employmentGrid"></div>
-                    </div>
-                    <div class="tab-content" id="tab-certifications">
-                        <div class="documents-grid" id="certificationsGrid"></div>
-                    </div>
-                    <div class="tab-content" id="tab-personal">
-                        <div class="documents-grid" id="personalGrid"></div>
-                    </div>
-                </div>
+            <div class="card">
+                <h2 class="card-title">Uploaded Documents</h2>
+                <table>
+                    <thead><tr><th>Document Name</th><th>Category</th><th>Upload Date</th><th>Action</th></tr></thead>
+                    <tbody id="documentsTableBody"></tbody>
+                </table>
             </div>
         </main>
     </div>
-
-    <!-- Upload Modal -->
-    <div class="modal" id="uploadModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Document Details</div>
-                <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="uploadForm">
-                <div class="form-group">
-                    <label class="form-label">Document Name</label>
-                    <input type="text" class="form-input" id="docName" required placeholder="e.g., Employment Contract 2024">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <select class="form-select" id="docCategory" required>
-                        <option value="">Select category</option>
-                        <option value="employment">Employment</option>
-                        <option value="certifications">Certifications</option>
-                        <option value="personal">Personal</option>
-                    </select>
-                </div>
-                                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" id="docStatus" required>
-                        <option value="verified">Verified</option>
-                        <option value="pending">Pending</option>
-                        <option value="expired">Expired</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-primary">Save Document</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span>Document uploaded successfully!</span>
-    </div>
-
     <script>
-        // === Sidebar Toggle ===
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        // === Tabs ===
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const target = tab.getAttribute('data-tab');
-                tabContents.forEach(c => {
-                    c.classList.remove('active');
-                    if (c.id === `tab-${target}`) c.classList.add('active');
-                });
-            });
-        });
-
-        // === Upload Modal ===
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const uploadModal = document.getElementById('uploadModal');
-        const closeModal = document.getElementById('closeModal');
-        const uploadForm = document.getElementById('uploadForm');
-        const toast = document.getElementById('toast');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            if (e.dataTransfer.files.length > 0) {
-                openModal();
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = '../auth/login.html';
+                return;
             }
-        });
 
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) openModal();
-        });
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const documentsTableBody = document.getElementById('documentsTableBody');
 
-        function openModal() { uploadModal.classList.add('active'); }
-        closeModal.addEventListener('click', () => uploadModal.classList.remove('active'));
-
-        // === Toast Notification ===
-        function showToast() {
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // === Mock Document Rendering ===
-        const documents = [
-            { name: "Employment Contract 2024", category: "employment", status: "verified", date: "2024-02-12" },
-            { name: "Safety Training Certificate", category: "certifications", status: "pending", date: "2024-08-01" },
-            { name: "Passport Copy", category: "personal", status: "verified", date: "2023-12-05" },
-            { name: "NDA Agreement", category: "employment", status: "expired", date: "2022-09-18" },
-        ];
-
-        function renderDocuments() {
-            const grids = {
-                all: document.getElementById('documentsGrid'),
-                employment: document.getElementById('employmentGrid'),
-                certifications: document.getElementById('certificationsGrid'),
-                personal: document.getElementById('personalGrid')
+            // --- Function to fetch and display documents ---
+            const fetchDocuments = () => {
+                fetch(`http://127.0.0.1:5000/api/employees/${user.userID}/documents`)
+                    .then(res => res.json())
+                    .then(docs => {
+                        documentsTableBody.innerHTML = ''; // Clear existing rows
+                        if (docs.length === 0) {
+                             documentsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No documents uploaded yet.</td></tr>';
+                        } else {
+                            docs.forEach(doc => {
+                                const row = `
+                                    <tr>
+                                        <td>${doc.documentName}</td>
+                                        <td>${doc.category}</td>
+                                        <td>${new Date(doc.uploadDate).toLocaleDateString()}</td>
+                                        <td><a href="http://127.0.0.1:5000/api/documents/${doc.documentID}" class="btn-download" target="_blank">Download</a></td>
+                                    </tr>
+                                `;
+                                documentsTableBody.innerHTML += row;
+                            });
+                        }
+                    });
             };
-            Object.values(grids).forEach(grid => grid.innerHTML = '');
 
-            documents.forEach(doc => {
-                const card = document.createElement('div');
-                card.classList.add('document-card');
-                card.innerHTML = `
-                    <div class="document-icon"><i class="fas fa-file-alt"></i></div>
-                    <div class="document-name">${doc.name}</div>
-                    <div class="status-badge status-${doc.status}">${doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}</div>
-                    <div class="document-details">
-                        <span><i class="far fa-folder"></i> ${doc.category}</span>
-                        <span><i class="far fa-calendar"></i> ${doc.date}</span>
-                    </div>
-                    <div class="document-actions">
-                        <button class="doc-btn"><i class="fas fa-eye"></i> View</button>
-                        <button class="doc-btn delete"><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                `;
-                grids.all.appendChild(card);
-                grids[doc.category].appendChild(card.cloneNode(true));
+            // --- Function to handle file upload ---
+            const handleFiles = (files) => {
+                const file = files[0];
+                const category = prompt("Enter document category (e.g., 'Contract', 'ID', 'Certification'):", "General");
+                if (!category) return; // User cancelled
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('category', category);
+
+                fetch(`http://127.0.0.1:5000/api/employees/${user.userID}/documents`, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchDocuments(); // Refresh the list
+                })
+                .catch(err => console.error('Upload failed:', err));
+            };
+
+            // --- Event Listeners ---
+            uploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+            uploadArea.addEventListener('dragover', (e) => e.preventDefault());
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                handleFiles(e.dataTransfer.files);
             });
 
-            // Empty state if no documents
-            Object.entries(grids).forEach(([key, grid]) => {
-                if (!grid.children.length) {
-                    grid.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <div class="empty-state-title">No documents found</div>
-                            <p>Upload new documents to get started</p>
-                        </div>
-                    `;
-                }
-            });
-        }
-
-        renderDocuments();
-
-        // === Handle Form Submission ===
-        uploadForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('docName').value.trim();
-            const category = document.getElementById('docCategory').value;
-            const status = document.getElementById('docStatus').value;
-            const date = new Date().toISOString().split('T')[0];
-
-            if (name && category && status) {
-                documents.push({ name, category, status, date });
-                renderDocuments();
-                uploadModal.classList.remove('active');
-                showToast();
-                uploadForm.reset();
-            }
+            // Initial fetch of documents
+            fetchDocuments();
         });
     </script>
 </body>
 </html>
+

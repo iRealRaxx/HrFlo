@@ -1,0 +1,184 @@
+hrFlo - Talent Management System
+
+1. Project Overview
+
+hrFlo is a comprehensive, full-stack talent management system designed to streamline the entire lifecycle of HR operations. It provides a unified platform for internal and external job postings, candidate sourcing and shortlisting, employee onboarding, promotions, succession planning, and performance metric tracking. The system features dedicated dashboards for HR Managers, Employees, and Candidates.
+
+Backend: Flask (Python)
+
+Database: Microsoft SQL Server
+
+Frontend: HTML, CSS, and JavaScript (no external frameworks)
+
+2. Prerequisites
+
+Before you begin, ensure you have the following software installed on your machine:
+
+Python (3.7 or newer): Download Python
+
+Microsoft SQL Server: Download SQL Server Express (the free Express edition is sufficient).
+
+SQL Server Management Studio (SSMS): Download SSMS to manage your database.
+
+ODBC Driver for SQL Server: This is required for Python to connect to the database. Download ODBC Driver.
+
+3. Setup Instructions
+
+Follow these steps carefully to get the application running.
+
+Step 3.1: Database Setup
+
+Open SQL Server Management Studio (SSMS) and connect to your local server instance (e.g., localhost\SQLEXPRESS).
+
+In the Object Explorer, right-click on Databases and select New Database.
+
+Name the new database HRFloDB and click OK.
+
+Right-click on the newly created HRFloDB database and select New Query.
+
+Copy and paste the entire SQL script below into the query window and click Execute. This will create all the necessary tables.
+
+-- Drop existing tables to ensure a clean setup
+DROP TABLE IF EXISTS Applications;
+DROP TABLE IF EXISTS Candidates;
+DROP TABLE IF EXISTS Onboarding;
+DROP TABLE IF EXISTS Promotions;
+DROP TABLE IF EXISTS SuccessionPlans;
+DROP TABLE IF EXISTS PerformanceReviews;
+DROP TABLE IF EXISTS Documents;
+DROP TABLE IF EXISTS JobPostings;
+DROP TABLE IF EXISTS Users;
+
+-- Main table for all users
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY IDENTITY(1,1),
+    FirstName NVARCHAR(50) NOT NULL,
+    LastName NVARCHAR(50) NOT NULL,
+    Email NVARCHAR(100) UNIQUE NOT NULL,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    UserRole NVARCHAR(50) NOT NULL,
+    Position NVARCHAR(100),
+    Department NVARCHAR(100),
+    HireDate DATE,
+    ManagerID INT NULL FOREIGN KEY REFERENCES Users(UserID)
+);
+
+-- Job Postings
+CREATE TABLE JobPostings (
+    JobID INT PRIMARY KEY IDENTITY(1,1),
+    JobTitle NVARCHAR(100) NOT NULL,
+    JobDescription NVARCHAR(MAX) NOT NULL,
+    Location NVARCHAR(100),
+    Department NVARCHAR(100),
+    EmploymentType NVARCHAR(50),
+    ClosingDate DATE,
+    Status NVARCHAR(20) DEFAULT 'Open',
+    IsInternal BIT DEFAULT 0
+);
+
+-- Candidates and Applications
+CREATE TABLE Candidates (
+    CandidateID INT PRIMARY KEY IDENTITY(1,1),
+    FullName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) UNIQUE NOT NULL,
+    Resume NVARCHAR(MAX)
+);
+
+CREATE TABLE Applications (
+    ApplicationID INT PRIMARY KEY IDENTITY(1,1),
+    JobID INT FOREIGN KEY REFERENCES JobPostings(JobID),
+    CandidateID INT FOREIGN KEY REFERENCES Candidates(CandidateID),
+    ApplicationDate DATE DEFAULT GETDATE(),
+    Status NVARCHAR(50) DEFAULT 'Received'
+);
+
+-- Onboarding Process
+CREATE TABLE Onboarding (
+    OnboardingID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT FOREIGN KEY REFERENCES Users(UserID),
+    StartDate DATE,
+    Status NVARCHAR(20) DEFAULT 'Pending',
+    Progress INT DEFAULT 0
+);
+
+-- Employee Documents
+CREATE TABLE Documents (
+    DocumentID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT FOREIGN KEY REFERENCES Users(UserID),
+    DocumentName NVARCHAR(255),
+    Category NVARCHAR(50),
+    UploadDate DATE DEFAULT GETDATE(),
+    FilePath NVARCHAR(255)
+);
+
+-- Promotions, Succession, and Performance
+CREATE TABLE Promotions (
+    PromotionID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT FOREIGN KEY REFERENCES Users(UserID),
+    OldPosition NVARCHAR(100),
+    NewPosition NVARCHAR(100),
+    PromotionDate DATE,
+    Status NVARCHAR(50) DEFAULT 'Pending'
+);
+
+CREATE TABLE SuccessionPlans (
+    PlanID INT PRIMARY KEY IDENTITY(1,1),
+    CriticalRole NVARCHAR(100) NOT NULL,
+    SuccessorID INT FOREIGN KEY REFERENCES Users(UserID),
+    Readiness NVARCHAR(50)
+);
+
+CREATE TABLE PerformanceReviews (
+    ReviewID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT FOREIGN KEY REFERENCES Users(UserID),
+    ReviewDate DATE,
+    Rating DECIMAL(3, 2),
+    Comments NVARCHAR(MAX)
+);
+
+
+Step 3.2: Backend Setup
+
+Open a terminal or command prompt and navigate to the root directory of the hrflo project.
+
+Install the required Python packages by running the following command:
+
+pip install -r requirements.txt
+
+
+Run the Flask backend server:
+
+python app.py
+
+
+If successful, you will see messages indicating that the server is running on http://127.0.0.1:5000. Keep this terminal window open.
+
+Step 3.3: Frontend Setup
+
+Navigate to the frontend/auth/ folder in your file explorer.
+
+Open the login.html file in a modern web browser (like Chrome, Firefox, or Edge).
+
+4. How to Use the Application
+
+Register Your First User:
+
+On the login.html page, click the Sign Up button.
+
+Fill out the form and select the "HR Manager" role from the dropdown.
+
+Complete the registration.
+
+Log In:
+
+After registering, you will be taken to the login form.
+
+Enter the credentials for the HR Manager account you just created.
+
+Upon successful login, you will be redirected to the HR Manager Dashboard.
+
+Explore the Application:
+
+From the HR Manager Dashboard, you can navigate to different modules using the sidebar to create job postings, manage applicants, and more.
+
+You can also register new users with "Employee" or "Candidate" roles to test their respective dashboards and functionalities.

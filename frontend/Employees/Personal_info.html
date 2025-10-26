@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Employee Dashboard | hrFlo</title>
+    <title>Personal Information | hrFlo</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
@@ -20,10 +20,11 @@
         .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.15); color: #fff; }
         /* Main Content Styles */
         .main { flex: 1; margin-left: 280px; padding: 20px 32px; }
-        .page-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        .page-subtitle { font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 24px;}
-        .card { background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
-        .card-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .page-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 24px;}
+        .card { background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 32px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500;}
+        input { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff;}
+        .form-group { margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -31,35 +32,38 @@
         <aside class="sidebar">
             <header class="sidebar-header"><div class="brand-logo">hrFlo</div></header>
             <nav class="nav">
-                <a class="nav-item active" href="./dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
-                <a class="nav-item" href="./personal_info.html"><i class="fas fa-user"></i><span>Personal Info</span></a>
-                <a class="nav-item" href="./documents.html"><i class="fas fa-file"></i><span>Documents</span></a>
+                <a class="nav-item" href="dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a class="nav-item active" href="personal_info.html"><i class="fas fa-user"></i><span>Personal Info</span></a>
+                <a class="nav-item" href="documents.html"><i class="fas fa-file"></i><span>Documents</span></a>
             </nav>
         </aside>
         <main class="main">
-            <div class="page-header">
-                <h1 id="welcome-message">Welcome!</h1>
-                <p class="page-subtitle">Here's a summary of your tasks and company announcements.</p>
-            </div>
+            <div class="page-header"><h1>My Information</h1></div>
             <div class="card">
-                <h2 class="card-title">My Tasks</h2>
-                <!-- Task list can be dynamically populated here -->
-            </div>
-            <div class="card">
-                <h2 class="card-title">Company Announcements</h2>
-                <!-- Announcements can be dynamically populated here -->
+                <form id="personalInfoForm">
+                    <div class="form-group"><label>First Name</label><input type="text" id="firstName" disabled></div>
+                    <div class="form-group"><label>Last Name</label><input type="text" id="lastName" disabled></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="email" disabled></div>
+                    <!-- Add more fields as needed -->
+                </form>
             </div>
         </main>
     </div>
     <script>
-        // Protect page and greet user
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('user'));
-            if (!user || user.role !== 'Employee') {
-              window.location.href = '../auth/login.html';
-            } else {
-                document.getElementById('welcome-message').textContent = `Welcome, ${user.firstName}!`;
+            if (!user) {
+                window.location.href = '../auth/login.html';
+                return;
             }
+            // Fetch and populate user data
+            fetch(`http://127.0.0.1:5000/api/employees/${user.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('firstName').value = data.firstName;
+                    document.getElementById('lastName').value = data.lastName;
+                    document.getElementById('email').value = data.email;
+                });
         });
     </script>
 </body>

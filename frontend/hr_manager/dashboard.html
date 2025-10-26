@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | hrFlo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a0f2e 50%, #0d0d0d 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #111111 0%, #1a1a2e 50%, #16213e 100%);
+            border-right: 1px solid rgba(99, 102, 241, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.1);
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        .brand-logo { font-size: 24px; font-weight: 700; }
+        .nav { flex: 1; padding: 20px 12px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); padding: 16px 16px 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: rgba(255, 255, 255, 0.7); text-decoration: none; border-radius: 10px; transition: all 0.3s ease; font-size: 14px; position: relative; }
+        .nav-item i { font-size: 18px; width: 20px; text-align: center; }
+        .nav-item:hover { background: rgba(99, 102, 241, 0.1); color: #fff; }
+        .nav-item.active { background: rgba(99, 102, 241, 0.15); color: #fff; }
+        .sidebar-footer { padding: 12px; border-top: 1px solid rgba(99, 102, 241, 0.1); }
+        .main { flex: 1; margin-left: 280px; }
+        .topbar {
+            background: rgba(17, 17, 17, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .profile { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 40px; height: 40px; border-radius: 10px; background: #6366f1; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .profile-text .name { font-size: 14px; font-weight: 600; }
+        .profile-text .role { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+        .page-header { padding: 32px; display: flex; justify-content: space-between; align-items: center; }
+        .page-title h1 { font-size: 32px; font-weight: 700; }
+        .page-subtitle { font-size: 14px; color: rgba(255, 255, 255, 0.6); }
+        .btn-primary { padding: 12px 24px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .kpi-grid { padding: 0 32px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .kpi-card { background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 24px; }
+        .kpi-label { font-size: 13px; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px; }
+        .kpi-value { font-size: 36px; font-weight: 700; }
+        .content-grid { padding: 0 32px 32px; display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        .card { background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(26, 26, 46, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 24px; }
+        .card-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(99, 102, 241, 0.1); }
+        .card-title { font-size: 18px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <div class="brand-logo">hrFlo</div>
+            </header>
+            <nav class="nav">
+                <div class="nav-section-title">Overview</div>
+                <a class="nav-item active" href="dashboard.html"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                
+                <div class="nav-section-title">Recruitment</div>
+                <a class="nav-item" href="job_posting.html"><i class="fas fa-briefcase"></i><span>Job Postings</span></a>
+                <a class="nav-item" href="applicants.html"><i class="fas fa-users"></i><span>Applicants</span></a>
+
+                <div class="nav-section-title">Employee Management</div>
+                <a class="nav-item" href="onboarding.html"><i class="fas fa-user-check"></i><span>Onboarding</span></a>
+                <a class="nav-item" href="promotions.html"><i class="fas fa-arrow-up"></i><span>Promotions</span></a>
+                <a class="nav-item" href="succession_planning.html"><i class="fas fa-sitemap"></i><span>Succession Planning</span></a>
+            </nav>
+            <footer class="sidebar-footer">
+                <a class="nav-item" href="../auth/login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+            </footer>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div></div> <!-- Spacer -->
+                <div class="profile">
+                    <div class="profile-text">
+                        <div class="name" id="userName">Loading...</div>
+                        <div class="role" id="userRole">HR Manager</div>
+                    </div>
+                    <div class="avatar" id="userAvatar"></div>
+                </div>
+            </header>
+
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>HR Manager Dashboard</h1>
+                    <p class="page-subtitle">Welcome back! Here's an overview of your HR operations.</p>
+                </div>
+                <a href="add_job.html"><button class="btn-primary"><i class="fas fa-plus"></i> New Job Posting</button></a>
+            </div>
+
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Active Job Postings</div>
+                    <div class="kpi-value" id="kpi-jobs">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">New Applicants</div>
+                    <div class="kpi-value" id="kpi-applicants">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Pending Onboarding</div>
+                    <div class="kpi-value" id="kpi-onboarding">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Employees</div>
+                    <div class="kpi-value" id="kpi-employees">0</div>
+                </div>
+            </section>
+
+            <section class="content-grid">
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Hiring Pipeline</h2></div>
+                    <canvas id="hiringChart"></canvas>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Upcoming Tasks</h2></div>
+                    <!-- Task list can be added here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Page Protection & User Data ---
+            // *** FIX: Corrected localStorage key from 'hrFloUser' to 'user' ***
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            // *** FIX: Changed check from includes('HR') to a direct comparison ***
+            if (!user || user.role !== 'HR Manager') {
+            //     If no user is logged in or user is not an HR Manager, redirect to login
+               window.location.href = '../auth/login.html';
+            } else {
+            //     Populate dashboard with user's data
+               document.getElementById('userName').textContent = `${user.firstName} ${user.lastName}`;
+               document.getElementById('userRole').textContent = user.role;
+               document.getElementById('userAvatar').textContent = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
+            }
+
+            // --- Logout Functionality ---
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                localStorage.removeItem('user'); // Clear user session
+                window.location.href = '../auth/login.html';
+            });
+            
+            // --- Fetch Dashboard Stats (No changes needed here) ---
+            fetch('http://127.0.0.1:5000/api/dashboard-stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('kpi-jobs').textContent = stats.activeJobPostings || 0;
+                    document.getElementById('kpi-applicants').textContent = stats.candidatesInPipeline || 0;
+                    document.getElementById('kpi-onboarding').textContent = stats.pendingOnboarding || 0;
+                    document.getElementById('kpi-employees').textContent = stats.totalEmployees || 0;
+                })
+                .catch(error => console.error("Failed to fetch dashboard stats:", error));
+
+            // --- Chart.js Example ---
+            const ctx = document.getElementById('hiringChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Received', 'Shortlisted', 'Interviewing', 'Offered', 'Hired'],
+                    datasets: [{
+                        label: 'Candidates in Pipeline',
+                        data: [156, 78, 42, 21, 18],
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
